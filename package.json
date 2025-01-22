@@ -2,6 +2,7 @@
   "name": "kwork-vpn-sell",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "nodemon index.js"
   },
@@ -12,9 +13,11 @@
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
     "@prisma/client": "^6.2.1",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "node-telegram-bot-api": "^0.66.0",
     "nodemon": "^3.1.9",
-    "prisma": "^6.2.1"
+    "prisma": "^6.2.1",
+    "uuid": "^11.0.5"
   }
 }

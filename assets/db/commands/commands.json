@@ -1,6 +1,6 @@
 [
     {
-        "comamnd": "/start",
+        "command": "/start",
         "description": "Начать"
     }
 ]
