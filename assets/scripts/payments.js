@@ -2,6 +2,7 @@ import { checkout } from "../services/payment.js";
 import { prisma } from "../services/prisma.js";
 import { v4 } from "uuid";
 import { handleSubscription } from "./subscribtions.js";
+import axios from "axios";
 
 let paymentIntervals = {}; 
 
@@ -100,6 +101,14 @@ async function succeedPayment(bot, chatId, paymentId, data) {
                     isPaid: paymentResponse.paid,
                 },
             });
+
+            await prisma.users.update({
+                where: {chatId},
+                data: {
+                    paidCard: true,
+
+                }
+            })
             return await handleSubscription(bot, chatId, data)
         }
     } catch (error) {
@@ -108,5 +117,5 @@ async function succeedPayment(bot, chatId, paymentId, data) {
 }
 
 export async function createPayout(){
-    return ""
+    axios.post()
 }

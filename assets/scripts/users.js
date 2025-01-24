@@ -43,7 +43,7 @@ export async function profile(bot, chatId){
         where: {chatId}
     })
     await bot.sendMessage(chatId, `💼 Ваш профиль:
-
+        
 👤 Имя: ${user.firstname} ${user.lastname}
 🆔 ID: ${user.chatId}
 💸 Баланс: ${user.balance}

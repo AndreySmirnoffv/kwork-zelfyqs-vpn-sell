@@ -8,17 +8,20 @@ export async function handleSubscription(bot, chatId, subscriptionType) {
         one_year_sub: { price: 1550, durationInMonths: 12 },
     };
 
-    const subscription = subscriptionOptions[subscriptionType];
+    const subscribtion = subscriptionOptions[subscriptionType];
 
-    if (!subscription) {
+    if (!subscribtion) {
         return await bot.sendMessage(chatId, "Выбран неверный тип подписки.");
     }
 
-    const endDate = dayjs().add(subscription.durationInMonths, "month").toDate();
+    const endDate = dayjs().add(subscribtion.durationInMonths, "month").toDate();
+    const user = await prisma.users.findFirst({
+        where: {chatId}
+    })
 
     await prisma.users.update({
         where: { chatId },
-        data: { subStatus: true, subscriptionEnd: endDate },
+        data: { subStatus: true, subscriptionEnd: endDate, currentSubCount: user.currentSubCount + 1, subScriptionType: "" },
     });
 
     return await bot.sendMessage(chatId, `Подписка оформлена! Действует до ${endDate.toLocaleDateString()}`);

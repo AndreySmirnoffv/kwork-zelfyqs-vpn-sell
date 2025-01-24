@@ -14,7 +14,7 @@ export const adminKeyboard = {
     reply_markup: JSON.stringify({
         inline_keyboard: [
             [{text: "Доход", callback_data: "admin_users_income"}, {text: "Реферальные выплаты", callback_data: "admin_ref_payments"}],
-            [{text: "Активные пользователи", callback_data: "admin_active_users"}, {text: "Заблокировать", callback_data: "admin_block"} ]
+            [{text: "Заблокировать", callback_data: "admin_block"} ]
         ]
     })
 }      

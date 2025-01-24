@@ -1,4 +1,3 @@
-import { checkout } from "../services/payment.js";
 import { prisma } from "../services/prisma.js";
 import { waitForText } from "../utils/waitForText.js";
 
@@ -50,4 +49,25 @@ export async function refPayments(bot, chatId){
     const totalRefIncome = refPayments.map(payment => parseFloat(payment.amount)).reduce((sum, current) => sum + current, 0)
 
     return await bot.sendMessage(chatId, `Выплата по рефералам составила: ${totalRefIncome} RUB`)
+}
+
+export async function getUser(bot, chatId){
+
+    await bot.sendMessage(chatId, "Пришлите мне имя пользователя которого хотите просмотреть")
+
+    const username = await waitForText(bot, chatId)
+
+    const user = await prisma.users.findFirst({
+        where: username,
+    })
+    
+    return await bot.sendMessage(chatId, `💼 Ваш профиль:
+
+        👤 Имя: ${user.firstname} ${user.lastname}
+        🆔 ID: ${user.chatId}
+        💸 Баланс: ${user.balance}
+        ♻️ Реф. баланс: ${user.refBalance}
+        
+        📅 Подписка до: 22.01.2025 18:13
+        ${user.subStatus ? "✅ Подписка действует" :  "❌ Подписка истекла" } `)
 }
