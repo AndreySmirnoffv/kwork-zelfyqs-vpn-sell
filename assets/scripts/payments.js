@@ -3,10 +3,11 @@ import { prisma } from "../services/prisma.js";
 import { v4 } from "uuid";
 import { handleSubscription } from "./subscribtions.js";
 import axios from "axios";
+import { createConfig } from "./wireguard.js";
 
 let paymentIntervals = {}; 
 
-export async function createPayment(bot, chatId, data) {
+export async function createPayment(bot, chatId, data, username) {
     const prices = {
         one_month_sub: 150,
         three_months_sub: 425,
@@ -39,7 +40,7 @@ export async function createPayment(bot, chatId, data) {
         console.log(paymentResponse);
 
         const intervalId = setInterval(
-            async () => await capturePayment(bot, chatId, paymentResponse.id, payload.amount.value, data),
+            async () => await capturePayment(bot, chatId, paymentResponse.id, payload.amount.value, data, username),
             10000
         );
 
@@ -57,7 +58,7 @@ export async function createPayment(bot, chatId, data) {
     }
 }
 
-async function capturePayment(bot, chatId, paymentId, price, data) {
+async function capturePayment(bot, chatId, paymentId, price, data, username) {
     try {
         const paymentResponse = await checkout.getPayment(paymentId);
         console.log(paymentResponse);
@@ -83,13 +84,13 @@ async function capturePayment(bot, chatId, paymentId, price, data) {
             data: { status: paymentResponse.status },
         });
 
-        return await succeedPayment(bot, chatId, paymentId, data);
+        return await succeedPayment(bot, chatId, paymentId, data, username);
     } catch (error) {
         console.error(error);
     }
 }
 
-async function succeedPayment(bot, chatId, paymentId, data) {
+async function succeedPayment(bot, chatId, paymentId, data, username) {
     try {
         const paymentResponse = await checkout.getPayment(paymentId);
 
@@ -106,10 +107,10 @@ async function succeedPayment(bot, chatId, paymentId, data) {
                 where: {chatId},
                 data: {
                     paidCard: true,
-
                 }
             })
-            return await handleSubscription(bot, chatId, data)
+            await handleSubscription(bot, chatId, data)
+            return await createConfig(bot, chatId, username)
         }
     } catch (error) {
         console.error(error);

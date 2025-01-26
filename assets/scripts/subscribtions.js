@@ -15,13 +15,14 @@ export async function handleSubscription(bot, chatId, subscriptionType) {
     }
 
     const endDate = dayjs().add(subscribtion.durationInMonths, "month").toDate();
+    
     const user = await prisma.users.findFirst({
         where: {chatId}
     })
 
     await prisma.users.update({
         where: { chatId },
-        data: { subStatus: true, subscriptionEnd: endDate, currentSubCount: user.currentSubCount + 1, subScriptionType: "" },
+        data: { subStatus: true, subscriptionEnd: endDate, currentSubCount: user.currentSubCount + 1, subscriptionType: subscriptionType },
     });
 
     return await bot.sendMessage(chatId, `Подписка оформлена! Действует до ${endDate.toLocaleDateString()}`);
