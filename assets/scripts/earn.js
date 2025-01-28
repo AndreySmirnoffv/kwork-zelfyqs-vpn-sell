@@ -6,7 +6,7 @@ export async function refMessage(bot, chatId){
     })
 
 
-    return await bot.sendPhoto(chatId, "../db/images/IMG_5182.JPG", {caption: `🎉 Реферальная программа SHIELDSURF+  
+    return await bot.sendPhoto(chatId, "./assets/db/images/IMG_5182.JPG", {caption: `🎉 Реферальная программа SHIELDSURF+  
 
 💡 Как это работает?  
 Делитесь своей уникальной реферальной ссылкой:  
@@ -22,7 +22,7 @@ export async function refMessage(bot, chatId){
 - Оплатить ими свою подписку, если её ещё нет.  
 
 📊 Ваш бонусный счет:  
-💸 ${user.refBalance} рублей  
+💸 ${user.balance} рублей  
 
 🎯 Преимущества:  
 - Быстрый и безопасный доступ к интернету с SHIELDSURF+.  

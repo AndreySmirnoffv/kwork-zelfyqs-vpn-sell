@@ -66,7 +66,7 @@ export async function getUser(bot, chatId){
         👤 Имя: ${user.firstname} ${user.lastname}
         🆔 ID: ${user.chatId}
         💸 Баланс: ${user.balance}
-        ♻️ Реф. баланс: ${user.refBalance}
+        ♻️ Реф. баланс: ${user.balance}
         
         📅 Подписка до: 22.01.2025 18:13
         ${user.subStatus ? "✅ Подписка действует" :  "❌ Подписка истекла" } `)

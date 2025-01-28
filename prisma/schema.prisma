@@ -8,22 +8,30 @@ datasource db {
 }
 
 model users {
-  id              BigInt   @id @default(autoincrement())
-  firstname       String?
-  lastname        String?
-  chatId          BigInt   @unique
-  balance         BigInt   @default(0)
-  isAdmin         Boolean
-  ref             String
-  origin          String
-  username        String
-  blocked         Boolean  @default(false)
-  refBalance      BigInt   @default(0)
-  subStatus       Boolean  @default(false)
-  subscriptionEnd DateTime @default(now())
-  currentSubCount Int      @default(0)
-  paidCard        Boolean  @default(false)
-  subscriptionType String @default("")
+  id            BigInt         @id @default(autoincrement())
+  firstname     String?
+  lastname      String?
+  chatId        BigInt         @unique
+  balance       BigInt         @default(0)
+  isAdmin       Boolean
+  ref           String
+  origin        String        @default("")
+  username      String
+  blocked       Boolean        @default(false)
+  refBalance    BigInt         @default(0)
+  substatus     Boolean        @default(false)
+  paidCard      Boolean        @default(false)
+  subscriptions subscription[]
+}
+
+model subscription {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt
+  status    Boolean  @default(false)
+  type      String   @default("")
+  startDate DateTime @default(now())
+  endDate   DateTime
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model payments {

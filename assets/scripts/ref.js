@@ -1,15 +1,24 @@
-import { prisma } from "../services/prisma";
+import { prisma } from "../services/prisma.js";
 import pricesDb from '../db/db.json' with {type: "json"}
 
-export async function refPaymentBalance(bot, chatId, subscriptionType){
+export async function refPaymentBalance(bot, chatId){
     const user = await prisma.users.findFirst({
         where: {chatId}
     })
 
+    const acitveSubscriptions = await prisma.subscription.findFirst({
+        where: {userId: user.id}
+    })
+
+    if (!subscriptions){
+        await bot.sendMessage(chatId, "У вас нет активных подписок")
+    }
+
     await prisma.users.update({
         where: {chatId},
         data: {
-            refBalance: user.balance - pricesDb[subscriptionType]
+            balance: user.balance - pricesDb[acitveSubscriptions.type],
+            paidCard: false
         }
     })
 

@@ -4,6 +4,7 @@ import { prisma } from "../services/prisma.js";
 async function sendSubscriptionReminder(bot, chatId, subscriptionEnd) {
     const now = dayjs();
     const daysUntilEnd = dayjs(subscriptionEnd).diff(now, 'days');
+
     const user = await prisma.users.findFirst({
         where: {chatId},
     })
@@ -28,7 +29,7 @@ async function sendSubscriptionReminder(bot, chatId, subscriptionEnd) {
                         ]
                     })})
                     
-    } else if (daysUntilEnd < 0) {
+    } else if (daysUntilEnd === 0) {
         await bot.sendMessage(chatId, `Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом.`);
     }
 }
@@ -58,7 +59,24 @@ export async function checkSubscriptions(bot) {
     });
 
     for (const user of usersWithExpiredSubscriptions) {
-       
+        user.paidCard 
+        ? 
+        await bot.sendMessage(chatId, `Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом! Пожалуйста, продлите подписку.`, {
+            reply_markup: JSON.stringify({
+                inline_keyboard: [
+                    [{text: "Продлить с реферального счета", callback_data: "ref_payment"}]
+                ]
+            })
+        })
+        : 
+        await bot.sendPhoto(chatId, "./assets/db/images/IMG_5183.JPG", {caption: "Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом.", reply_markup: JSON.stringify({
+                        inline_keyboard: [
+                            [{text: "🗓 Месяц - 150 руб", callback_data: "one_month_sub"}],
+                            [{text: "🗓 3 месяца - 425 руб", callback_data: "three_months_sub"}],
+                            [{text: "🗓 6 месяцев - 800 руб", callback_data: "six_months_sub"}],
+                            [{text: "🗓 Год - 1550", callback_data: "one_year_sub"}]
+                        ]
+                    })})
         await bot.sendMessage(user.chatId, `Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом.`) 
 
         if (user.currentSubCount < 1){

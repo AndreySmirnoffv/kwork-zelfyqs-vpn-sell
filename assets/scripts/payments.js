@@ -92,9 +92,11 @@ async function capturePayment(bot, chatId, paymentId, price, data, username) {
 
 async function succeedPayment(bot, chatId, paymentId, data, username) {
     try {
+        // Получение информации о платеже
         const paymentResponse = await checkout.getPayment(paymentId);
 
         if (paymentResponse.status === "succeeded") {
+            // Обновление данных о платеже в базе данных
             await prisma.payments.update({
                 where: { paymentId },
                 data: {
@@ -103,20 +105,113 @@ async function succeedPayment(bot, chatId, paymentId, data, username) {
                 },
             });
 
+            const subscriptionDuration = data.duration || 30;
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + subscriptionDuration);
+
+            // Преобразуем chatId в BigInt
+            const chatIdBigInt = BigInt(chatId);
+
+            console.log("Проверка пользователя с chatId:", chatIdBigInt);
+            const user = await prisma.users.findFirst({
+                where: { chatId: chatIdBigInt },
+            });
+
+            if (!user) {
+                throw new Error("Пользователь не найден");
+            }
+            console.log("Найден пользователь:", user);
+
+            await prisma.subscription.create({
+                data: {
+                    userId: user.id,
+                    status: true,
+                    type: data.type || "default",
+                    startDate: new Date(),
+                    endDate: endDate,
+                },
+            });
+
             await prisma.users.update({
-                where: {chatId},
+                where: { chatId: chatIdBigInt },
                 data: {
                     paidCard: true,
+                },
+            });
+
+            if (user.origin !== null && user.origin !== "start") {
+                const originUserSubscription = await prisma.users.findFirst({
+                    where: { chatId: BigInt(user.origin) },  // Преобразуем origin в BigInt
+                });
+                console.log("originUserSubscription:", originUserSubscription);
+
+                if (!originUserSubscription) {
+                    console.error("Подписка originUser не найдена");
+                } else if (!originUserSubscription.status) {
+                    await prisma.users.update({
+                        where: { chatId: BigInt(user.origin) },
+                        data: {
+                            balance: 25,
+                        },
+                    });
+                } else {
+                    await prisma.users.update({
+                        where: { chatId: BigInt(user.origin) },
+                        data: {
+                            balance: 50,
+                        },
+                    });
                 }
-            })
-            await handleSubscription(bot, chatId, data)
-            return await createConfig(bot, chatId, username)
+            }
+
+            await bot.sendMessage(chatId, "Оплата прошла успешно! Ваша подписка активирована.");
+
+            await handleSubscription(bot, chatId, data);
+            return await createConfig(bot, chatId, username);
         }
     } catch (error) {
-        console.error(error);
+        console.error("Ошибка при обработке успешной оплаты:", error);
+        await bot.sendMessage(chatId, "Произошла ошибка при обработке оплаты. Пожалуйста, обратитесь в поддержку.");
     }
 }
 
+
+
 export async function createPayout(){
-    axios.post()
-}
+      try {
+    
+        const response = await axios.post(
+          'https://api.yookassa.ru/v3/payouts',
+          {
+            amount: {
+              value: amount,
+              currency: "RUB"
+            },
+            payout_destination_data: {
+              type: "sbp",
+              phone: phone,
+              bank_id: bankId
+            },
+            description: "Вывод",
+            metadata: {
+              order_id: "37"
+            }
+          },
+          {
+            headers: {
+              'Idempotence-Key': uuid.v4(),
+              'Content-Type': 'application/json'
+            },
+            auth: {
+              username: process.env.YOOKASSA_SHOPID,
+              password: process.env.YOOKASSA_SECRET_KEY
+            }
+          }
+        );
+
+        console.log(response.data)
+      } catch (error) {
+        res.status(500).json(error)
+        console.error('Error making payout:', error);
+      }
+    }

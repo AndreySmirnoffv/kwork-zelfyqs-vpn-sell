@@ -1,4 +1,4 @@
-import { adminKeyboard, userKeyboard } from '../keyboards/keyboards.js'
+import { adminKeyboard } from '../keyboards/keyboards.js'
 import {prisma} from '../services/prisma.js'
 import dotenv from 'dotenv'
 
@@ -30,11 +30,12 @@ export async function createUser(bot, msg){
             }
         })
     }
-    const adminMessage = user.isAdmin ? "Привет админ" : `Привет, ${msg.from.username}`
+   
+    if (user.isAdmin){
+        return await bot.sendMessage(msg.chat.id, "Привет админ", adminKeyboard)
+    }
 
-    const keyboardAdmin = user.isAdmin ? adminKeyboard : userKeyboard
-
-    return await bot.sendMessage(msg.chat.id, adminMessage, keyboardAdmin)  
+    return await bot.sendMessage(msg.chat.id, `Привет, ${msg.from.username}`)  
 }
 
 
@@ -44,11 +45,10 @@ export async function profile(bot, chatId){
     })
     await bot.sendMessage(chatId, `💼 Ваш профиль:
         
-👤 Имя: ${user.firstname} ${user.lastname}
-🆔 ID: ${user.chatId}
-💸 Баланс: ${user.balance}
-♻️ Реф. баланс: ${user.refBalance}
+👤 Имя: ${user?.firstname} ${user?.lastname}
+🆔 ID: ${user?.chatId}
+♻️ Реф. баланс: ${user?.balance}
 
 📅 Подписка до: 22.01.2025 18:13
-${user.subStatus ? "✅ Подписка действует" :  "❌ Подписка истекла" } `)
+${user?.subStatus ? "✅ Подписка действует" :  "❌ Подписка истекла" } `)
 }

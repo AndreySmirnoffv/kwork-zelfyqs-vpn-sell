@@ -8,22 +8,34 @@ export async function handleSubscription(bot, chatId, subscriptionType) {
         one_year_sub: { price: 1550, durationInMonths: 12 },
     };
 
-    const subscribtion = subscriptionOptions[subscriptionType];
+    const subscription = subscriptionOptions[subscriptionType];
 
-    if (!subscribtion) {
+    if (!subscription) {
         return await bot.sendMessage(chatId, "Выбран неверный тип подписки.");
     }
 
-    const endDate = dayjs().add(subscribtion.durationInMonths, "month").toDate();
-    
-    const user = await prisma.users.findFirst({
-        where: {chatId}
-    })
+    const endDate = dayjs().add(subscription.durationInMonths, "month").toDate();
 
-    await prisma.users.update({
+    const user = await prisma.users.findFirst({
         where: { chatId },
-        data: { subStatus: true, subscriptionEnd: endDate, currentSubCount: user.currentSubCount + 1, subscriptionType: subscriptionType },
     });
 
-    return await bot.sendMessage(chatId, `Подписка оформлена! Действует до ${endDate.toLocaleDateString()}`);
+    if (!user) {
+        return await bot.sendMessage(chatId, "Пользователь не найден. Пожалуйста, зарегистрируйтесь.");
+    }
+
+    await prisma.subscription.create({
+        data: {
+            userId: user.id,
+            status: true,
+            type: subscriptionType,
+            startDate: new Date(),
+            endDate: endDate,
+        },
+    });
+
+    return await bot.sendMessage(
+        chatId,
+        `Подписка оформлена! Действует до ${endDate.toLocaleDateString()}`
+    );
 }
