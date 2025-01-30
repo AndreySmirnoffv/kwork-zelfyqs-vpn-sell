@@ -1,5 +1,7 @@
 import { prisma } from "../services/prisma.js";
 import { waitForText } from "../utils/waitForText.js";
+import { deleteConfig } from "./wireguard.js";
+import prices from "../db/db.json" with {type: "json"}
 
 export async function blockUser(bot, chatId){
     await bot.sendMessage(chatId, "Пришли мне имя пользователя которого нужно заблокировать")
@@ -16,7 +18,7 @@ export async function blockUser(bot, chatId){
         return await bot.sendMessage(chatId, "Пользователь уже забанен")
     }
 
-    await prisma.users.update({
+    const user = await prisma.users.update({
         where: {
             username
         },
@@ -24,6 +26,8 @@ export async function blockUser(bot, chatId){
             blocked: true
         }
     })
+
+    await deleteConfig(user)
 
     return await bot.sendMessage(chatId, "Вы успешно заблокировали пользователя")
 }
@@ -70,4 +74,47 @@ export async function getUser(bot, chatId){
         
         📅 Подписка до: 22.01.2025 18:13
         ${user.subStatus ? "✅ Подписка действует" :  "❌ Подписка истекла" } `)
+}
+
+export async function changeVpnPrices(bot, chatId) {
+    await bot.sendMessage(chatId, `Выбери какую цену хочешь изменить:
+1. Подписка на месяц - ${prices.one_month_sub.price} руб.
+2. Подписка на 3 месяца - ${prices.three_months_sub.price} руб.
+3. Подписка на 6 месяцев - ${prices.six_months_sub.price} руб.
+4. Подписка на год - ${prices.one_year_sub.price} руб.
+Отправь номер подписки (1-4)`);
+
+    let message = await waitForText(bot, chatId);
+    let selectedSubscription;
+
+    switch (message) {
+        case "1":
+            selectedSubscription = "one_month_sub";
+            break;
+        case "2":
+            selectedSubscription = "three_months_sub";
+            break;
+        case "3":
+            selectedSubscription = "six_months_sub";
+            break;
+        case "4":
+            selectedSubscription = "one_year_sub";
+            break;
+        default:
+            await bot.sendMessage(chatId, "Ошибка: выбери число от 1 до 4.");
+            return;
+    }
+
+    await bot.sendMessage(chatId, `Пришли новую цену для ${prices[selectedSubscription].price} руб.`);
+
+    let newPrice = await waitForText(bot, chatId);
+
+    if (!/^\d+$/.test(newPrice)) {
+        await bot.sendMessage(chatId, "Ошибка: введите корректное число.");
+        return;
+    }
+
+    prices[selectedSubscription].price = Number(newPrice);
+    
+    await bot.sendMessage(chatId, `Цена изменена! Новая стоимость ${prices[selectedSubscription].price} руб.`);
 }

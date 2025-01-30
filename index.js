@@ -1,96 +1,84 @@
-import { adminIncome, blockUser, refPayments } from "./assets/scripts/admin.js"
-import { createUser, profile } from "./assets/scripts/users.js"
+import { adminIncome, blockUser, getUser, refPayments } from "./assets/scripts/admin.js"
+import { createUser, profile, subscribtions } from "./assets/scripts/users.js"
 import { createPayment } from "./assets/scripts/payments.js"
 import { bot } from "./bot.js"
 import { checkSubscriptions } from "./assets/scripts/reminder.js";
 import { refMessage } from "./assets/scripts/earn.js";
 import { refPaymentBalance } from "./assets/scripts/ref.js";
 import { prisma } from "./assets/services/prisma.js";
+import { checkChannelSubscription } from "./assets/scripts/checkSubscribtion.js";
+import { earnMessage } from "./assets/scripts/earnMessage.js";
+import { vpnMessage } from "./assets/scripts/vpnMessage.js";
+import { getVpnMessage } from "./assets/scripts/getVpnMessage.js";
+import * as fs from 'fs'
+
+const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
+
+bot.setMyCommands(commands)
 
 setInterval(async () => {
     await checkSubscriptions(bot); 
 }, 24 * 60 * 60 * 1000); 
 
 
+
+
 bot.on("message", async msg => {
-    const chatId = msg.chat.id
-    const user = await prisma.users.findFirst({
-        where: {chatId: chatId}
-    })
+    try {
+        const chatId = msg.chat.id
+        
+        const user = await prisma.users.findFirst({
+            where: {chatId: chatId}
+        })
+    
+        if(user?.blocked){
+            await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
+        }
+    
+        if (msg.text.includes("/start")){
+            await createUser(bot, msg)
+        }
+    
+        switch(msg.text){            
+            case "/profile":
+                await profile(bot, chatId)
+                break
+            case "/subscription":
+                await bot.sendPhoto(chatId, "./assets/db/images/IMG_5183.JPG", {caption: `чтобы оформить подписку, выберите удобный для вас период.
+    
+    ❗После покупки мы сразу предоставим:
+    
+    1⃣Произведите оплату подписки
+    2⃣Приложения для всех ваших устройств.
+    3⃣Получите ключ и подробные инструкции по настройке и подключению.
+    ‼ Внимание 1 подписка даёт возможно подключить только одно устройство !`, reply_markup: JSON.stringify({
+                    inline_keyboard: [
+                        [{text: "🗓 Месяц - 150 руб", callback_data: "one_month_sub"}],
+                        [{text: "🗓 3 месяца - 425 руб", callback_data: "three_months_sub"}],
+                        [{text: "🗓 6 месяцев - 800 руб", callback_data: "six_months_sub"}],
+                        [{text: "🗓 Год - 1550", callback_data: "one_year_sub"}]
+                    ]
+                })})
+                break
+            case "/earn":
+                await earnMessage(bot, chatId)
+                break
+            case "/bonus":
+                await refMessage(bot, chatId)
+                break
+    
+            case "/subscriptions":
+                await subscribtions(bot, chatId)
+                break
+        }
 
-    if(user.blocked){
-        return await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
+        const chatMember = await bot.getChatMember(process.env.CHANNEL_ID, chatId)
+        console.log(chatMember)
+    } catch (error) {
+        
     }
-
-    if (msg.text.includes("/start")){
-        console.log(msg.from.first_name)
-        await createUser(bot, msg)
-    }
-
-    switch(msg.text){            
-        case "/profile":
-            await profile(bot, chatId)
-            break
-        case "/subscription":
-            await bot.sendPhoto(chatId, "./assets/db/images/IMG_5183.JPG", {caption: `чтобы оформить подписку, выберите удобный для вас период.
-
-❗После покупки мы сразу предоставим:
-
-1⃣Произведите оплату подписки
-2⃣Приложения для всех ваших устройств.
-3⃣Получите ключ и подробные инструкции по настройке и подключению.
-‼ Внимание 1 подписка даёт возможно подключить только одно устройство !`, reply_markup: JSON.stringify({
-                inline_keyboard: [
-                    [{text: "🗓 Месяц - 150 руб", callback_data: "one_month_sub"}],
-                    [{text: "🗓 3 месяца - 425 руб", callback_data: "three_months_sub"}],
-                    [{text: "🗓 6 месяцев - 800 руб", callback_data: "six_months_sub"}],
-                    [{text: "🗓 Год - 1550", callback_data: "one_year_sub"}]
-                ]
-            })})
-            break
-        case "/connectvpn":
-            await bot.sendMessage(chatId, "hello world")
-            break
-        case "/earn":
-            await bot.sendMessage(chatId, "hello world")
-            break
-        case "/bonus":
-            await refMessage(bot, chatId)
-            break
-        case "/aboutvpn":
-            await bot.sendPhoto(chatId, "./assets/db/images/IMG_5181.JPG", {caption: ` 🛡 VPN SHIELDSURF  
-
- SHIELDSURF — современный и надёжный VPN-сервис для полного доступа к свободному интернету.  
-
-🔹 Ваши данные под защитой  
-Мы гарантируем полную анонимность. Ваши данные не используются и не хранятся.  
-
-🔹 Скорость и стабильность  
-Высокая скорость соединения и стабильная работа даже в сложных условиях.  
-
-🔹 Обход блокировок  
-Доступ ко всем сервисам, заблокированным в РФ, быстро и без перебоев.  
-`})
-// 🔹 Безлимитный трафик  
-// Скачивайте сколько угодно, включая торренты. Никаких ограничений.  
-
-// 🔹 Передовые технологии  
-// Мы используем протокол WireGuard, который обеспечивает высочайший уровень безопасности и скорости. В будущем мы добавим поддержку других современных протоколов.  
-
-// 🔹 Поддержка всех устройств  
-// SHIELDSURF работает на Windows, macOS, iOS, Android и даже на телевизорах с Android TV.  
-
-// 🔹 Круглосуточная поддержка 24/7  
-// Наша добрая и профессиональная команда всегда готова помочь, но вы будете обращаться к нам редко, ведь наш сервис работает безупречно.  
-
-// 🔹 Лучшая реферальная система  
-// Реферальная система SHIELDSURF+ — одна из самых выгодных на рынке! Приглашайте друзей, зарабатывайте на их подписках и выводите деньги.  
-
-// VPN SHIELDSURF — это свобода интернета, передовые технологии и абсолютная надёжность. Присоединяйтесь к лучшим!`})
-            break
-    }
+   
 })
-
 
 bot.on('callback_query', async msg => {
     const data = msg.data
@@ -116,8 +104,8 @@ bot.on('callback_query', async msg => {
             await adminIncome(bot, chatId)
             break
         case "admin_subscriptions":
-            break
-        case "admin_block":
+            break          
+        case "admin_block_user":
             await bot.deleteMessage(chatId, messageId)
             await blockUser(bot, chatId)
             break
@@ -129,6 +117,9 @@ bot.on('callback_query', async msg => {
             await bot.deleteMessage(chatId, messageId)
             await createPayment(bot, chatId, data, username)
             break
+        case "six_months_sub":
+            await bot.deleteMessage(chatId, messageId)
+            await createPayment(bot, chatId, data, username)
         case "one_year_sub":
             await bot.deleteMessage(chatId, messageId)
             await createPayment(bot, chatId, data, username)
@@ -137,5 +128,34 @@ bot.on('callback_query', async msg => {
             await bot.deleteMessage(chatId, messageId)
             await refPaymentBalance()
             break
+        case "get_user":
+            await bot.deleteMessage(chatId, messageId)
+            await getUser(bot, chatId)
+            break
+        case "change_vpn_prices":
+            await bot.deleteMessage(chatId, messageId)
+            await changeVpnPrices(bot, chatId)
+            break
+        case "check_channel_subscription":
+            await bot.deleteMessage(chatId, messageId)
+            await checkChannelSubscription(bot, chatId)
+            break
+        case "profile":
+            await bot.deleteMessage(chatId, messageId)
+            await profile(bot, chatId)
+            break
+        case "bonus":
+            await bot.deleteMessage(chatId, messageId)
+            await refMessage(bot, chatId)
+            break
+        case "get_vpn":
+            await bot.deleteMessage(chatId, messageId)
+            await getVpnMessage(bot, chatId)
+            break
+        case "info_vpn":
+            await bot.deleteMessage(chatId, messageId)
+            await vpnMessage(bot, chatId)
+            break
+
     }
 })

@@ -12,10 +12,6 @@
         "description": "Подписка 📅"
     },
     {
-        "command": "/connectvpn",
-        "description": "Подключить VPN 🌐"
-    },
-    {
         "command": "/earn",
         "description": "💰 Заработать"
     },
@@ -24,7 +20,7 @@
         "description": "Бонус 🎁"
     },
     {
-        "command": "/aboutvpn",
-        "description": "Узнать о VPN ℹ️"
+        "command": "/subscriptions",
+        "description": "Мои подписки 📅"
     }
 ]

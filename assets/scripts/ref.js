@@ -23,7 +23,7 @@ export async function refPaymentBalance(bot, chatId){
     })
 
     await prisma.refpayments.create({
-        amount: pricesDb[subscriptionType],
+        amount: pricesDb[acitveSubscriptions.type],
         userId: chatId
     })
     

@@ -2,21 +2,20 @@ import { checkout } from "../services/payment.js";
 import { prisma } from "../services/prisma.js";
 import { v4 } from "uuid";
 import { handleSubscription } from "./subscribtions.js";
+import prices from '../db/db.json' with {type: "json"}
 import axios from "axios";
 import { createConfig } from "./wireguard.js";
 
 let paymentIntervals = {}; 
 
 export async function createPayment(bot, chatId, data, username) {
-    const prices = {
-        one_month_sub: 150,
-        three_months_sub: 425,
-        one_year_sub: { price: 1550, durationInMonths: 12 },
-    };
+
+    console.log(prices[data].price)
+
     try {
         const payload = {
             amount: {
-                value: prices[data],
+                value: prices[data].price,
                 currency: "RUB",
             },
             confirmation: {
@@ -174,8 +173,6 @@ async function succeedPayment(bot, chatId, paymentId, data, username) {
         await bot.sendMessage(chatId, "Произошла ошибка при обработке оплаты. Пожалуйста, обратитесь в поддержку.");
     }
 }
-
-
 
 export async function createPayout(){
       try {

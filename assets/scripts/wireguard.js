@@ -96,4 +96,19 @@ export async function createConfig(bot, chatId, username) {
   console.log(`- QR-код клиента: ${qrCodePath}`);
 }
 
-createConfig();
+export function deleteConfig(user) {
+  const clientName = user.username;
+  const filePath = `/etc/wireguard/${clientName}-wg.conf`;
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        console.error(`Ошибка: файл ${filePath} не найден`);
+      } else {
+        console.error(`Ошибка при удалении файла:`, err);
+      }
+      return;
+    }
+    console.log(`Файл ${filePath} успешно удалён`);
+  });
+}

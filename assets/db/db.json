@@ -1,5 +1,6 @@
-[
-   { "one_month_sub": 150},
-    {"three_months_sub": 425},
-   { "one_year_sub": 1550}
-]
+{
+   "one_month_sub": { "price": 150, "durationInMonths": 1 },
+   "three_months_sub": { "price": 425, "durationInMonths": 3 },
+   "six_months_sub": { "price": 800, "durationInMonths": 6 },
+   "one_year_sub": { "price": 1550, "durationInMonths": 12 }
+}
