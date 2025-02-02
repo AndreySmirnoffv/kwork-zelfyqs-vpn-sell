@@ -15,5 +15,9 @@ export async function vpnMessage(bot, chatId){
 💡 Поддержка 24/7:
 
 Обращайтесь, если потребуется помощь.
-`})
+`, reply_markup: {
+    inline_keyboard: [
+        [{text: "Назад", callback_data: "main"}]
+    ]
+}})
 }

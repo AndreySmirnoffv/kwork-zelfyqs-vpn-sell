@@ -21,6 +21,7 @@ model users {
   refBalance    BigInt         @default(0)
   substatus     Boolean        @default(false)
   paidCard      Boolean        @default(false)
+  earnedBonus   Boolean        @default(false)
   subscriptions subscription[]
 }
 
@@ -37,11 +38,13 @@ model subscription {
 model payments {
   id        BigInt  @id @default(autoincrement())
   paymentId String  @unique
-  userId    String
+  userId    BigInt  // Теперь корректный тип
   amount    String
   status    String
-  isPaid    Boolean
+  paid      Boolean @default(false)
 }
+
+
 
 model refpayments {
   id     BigInt @id @default(autoincrement())

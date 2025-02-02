@@ -8,7 +8,7 @@ import { createConfig } from "./wireguard.js";
 
 let paymentIntervals = {}; 
 
-export async function createPayment(bot, chatId, data, username) {
+export async function createPayment(bot, userId, data, username) {
 
     console.log(prices[data].price)
 
@@ -24,31 +24,30 @@ export async function createPayment(bot, chatId, data, username) {
             },
         };
 
-        const paymentResponse = await checkout.createPayment(payload, v4());
+        const {id, status, paid, amount, confirmation} = await checkout.createPayment(payload, v4());
 
         await prisma.payments.create({
             data: {
-                paymentId: paymentResponse.id,
-                status: paymentResponse.status,
-                isPaid: paymentResponse.paid,
-                userId: String(chatId),
-                amount: paymentResponse.amount.value,
+                paymentId: id,
+                status,
+                paid,
+                userId,
+                amount: amount.value,
             },
         });
 
-        console.log(paymentResponse);
 
         const intervalId = setInterval(
-            async () => await capturePayment(bot, chatId, paymentResponse.id, payload.amount.value, data, username),
+            async () => await capturePayment(bot, userId, id, payload.amount.value, data, username),
             10000
         );
 
-        paymentIntervals[paymentResponse.id] = intervalId;
+        paymentIntervals[id] = intervalId;
 
-        return await bot.sendMessage(chatId, `Вы можете оплатить по данной ссылке `, {
+        return await bot.sendMessage(userId, `Вы можете оплатить по данной ссылке `, {
             reply_markup: {
                 inline_keyboard: [
-                    [{text: "Оплатить", url: paymentResponse.confirmation.confirmation_url}]
+                    [{text: "Оплатить", url: confirmation.confirmation_url}]
                 ]
             }
         })
@@ -91,16 +90,14 @@ async function capturePayment(bot, chatId, paymentId, price, data, username) {
 
 async function succeedPayment(bot, chatId, paymentId, data, username) {
     try {
-        // Получение информации о платеже
         const paymentResponse = await checkout.getPayment(paymentId);
 
         if (paymentResponse.status === "succeeded") {
-            // Обновление данных о платеже в базе данных
             await prisma.payments.update({
                 where: { paymentId },
                 data: {
                     status: paymentResponse.status,
-                    isPaid: paymentResponse.paid,
+                    paid: paymentResponse.paid,
                 },
             });
 
@@ -108,7 +105,6 @@ async function succeedPayment(bot, chatId, paymentId, data, username) {
             const endDate = new Date();
             endDate.setDate(endDate.getDate() + subscriptionDuration);
 
-            // Преобразуем chatId в BigInt
             const chatIdBigInt = BigInt(chatId);
 
             console.log("Проверка пользователя с chatId:", chatIdBigInt);
@@ -140,7 +136,7 @@ async function succeedPayment(bot, chatId, paymentId, data, username) {
 
             if (user.origin !== null && user.origin !== "start") {
                 const originUserSubscription = await prisma.users.findFirst({
-                    where: { chatId: BigInt(user.origin) },  // Преобразуем origin в BigInt
+                    where: { chatId: BigInt(user.origin) }, 
                 });
                 console.log("originUserSubscription:", originUserSubscription);
 
@@ -163,7 +159,31 @@ async function succeedPayment(bot, chatId, paymentId, data, username) {
                 }
             }
 
-            await bot.sendMessage(chatId, "Оплата прошла успешно! Ваша подписка активирована.");
+            await bot.sendMessage(chatId, `1️⃣ Установите приложение WireGuard
+
+Android: Зайдите в Google Play и скачайте WireGuard: <a href="https://play.google.com/store/search?q=wireguard&c=apps">Google Play</a>.
+iOS: Откройте App Store и установите WireGuard: <a href="https://apps.apple.com/app/id1441195209">App Store</a>.
+Windows: Скачайте приложение с <a href="https://www.wireguard.com/install/">официального сайта</a>.
+macOS: Установите через <a href="https://apps.apple.com/app/id1441195209">App Store</a> или с <a href="https://www.wireguard.com/install/">официального сайта</a>.
+Linux: Установите через терминал (например, <code>apt install wireguard</code> для Debian/Ubuntu).
+Android TV: Найдите WireGuard в <a href="https://play.google.com/store/search?q=wireguard&c=apps">Google Play</a> на вашем телевизоре.
+
+2️⃣ Получите конфиг
+После покупки подписки в нашем боте вы получите персональный конфигурационный файл или QR-код для настройки.
+
+3️⃣ Импортируйте конфиг
+1. Откройте приложение WireGuard.
+2. Нажмите “Добавить туннель”.
+3. Выберите “Импортировать из файла” или “Сканировать QR-код”.
+4. Загрузите конфигурационный файл или отсканируйте QR-код из бота.
+
+4️⃣ Подключитесь
+1. Найдите добавленный туннель в списке.
+2. Включите его, нажав на переключатель.
+3. Убедитесь, что статус показывает “Активно”.
+4. Теперь ваш интернет защищён и свободен!
+
+Если возникнут вопросы, наша поддержка 24/7 всегда готова помочь. 💬`, { parse_mode: 'HTML' });;
 
             await handleSubscription(bot, chatId, data);
             return await createConfig(bot, chatId, username);

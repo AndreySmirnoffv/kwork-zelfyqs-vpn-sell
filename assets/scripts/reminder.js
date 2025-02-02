@@ -74,7 +74,8 @@ export async function checkSubscriptions(bot) {
                             [{text: "🗓 Месяц - 150 руб", callback_data: "one_month_sub"}],
                             [{text: "🗓 3 месяца - 425 руб", callback_data: "three_months_sub"}],
                             [{text: "🗓 6 месяцев - 800 руб", callback_data: "six_months_sub"}],
-                            [{text: "🗓 Год - 1550", callback_data: "one_year_sub"}]
+                            [{text: "🗓 Год - 1550", callback_data: "one_year_sub"}],
+                            [{text: "Назад", callback_data: "main"}]
                         ]
                     })})
         await bot.sendMessage(user.chatId, `Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом.`) 
