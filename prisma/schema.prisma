@@ -44,8 +44,6 @@ model payments {
   paid      Boolean @default(false)
 }
 
-
-
 model refpayments {
   id     BigInt @id @default(autoincrement())
   amount BigInt

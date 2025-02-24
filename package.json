@@ -13,7 +13,9 @@
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
     "@prisma/client": "^6.2.1",
+    "3x-ui": "^2.1.1",
     "axios": "^1.7.9",
+    "chalk": "^5.4.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "node-telegram-bot-api": "^0.66.0",

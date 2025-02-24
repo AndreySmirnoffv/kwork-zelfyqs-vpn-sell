@@ -1,7 +1,6 @@
 import { adminIncome, blockUser, getUser, refPayments } from "./assets/scripts/admin.js"
 import { createUser, profile, subscribtions } from "./assets/scripts/users.js"
 import { createPayment } from "./assets/scripts/payments.js"
-import { bot } from "./bot.js"
 import { checkSubscriptions } from "./assets/scripts/reminder.js";
 import { refMessage } from "./assets/scripts/earn.js";
 import { refPaymentBalance } from "./assets/scripts/ref.js";
@@ -14,7 +13,10 @@ import * as fs from 'fs'
 import { faqMessage } from "./assets/scripts/faqMessage.js";
 import { listMySubscriptions } from "./assets/scripts/subscribtions.js";
 import { createSubscriptionOPayment } from "./assets/scripts/subscriptionsPayment.js";
-import { generateWireGuardConfig } from './assets/scripts/wireguard.js'
+import TelegramBot from "node-telegram-bot-api";
+
+const bot = new TelegramBot(process.env.TOKEN, {polling})
+
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
 
 bot.setMyCommands(commands)
@@ -31,6 +33,7 @@ bot.on("message", async msg => {
         const user = await prisma.users.findFirst({
             where: {chatId: chatId}
         })
+
         if(user?.blocked){
             await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
         }

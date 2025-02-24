@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { prisma } from "../services/prisma.js";
+import { deleteInbound } from "./vless.js";
 
 async function sendSubscriptionReminder(bot, chatId, subscriptionEnd) {
     const now = dayjs();
@@ -30,6 +31,7 @@ async function sendSubscriptionReminder(bot, chatId, subscriptionEnd) {
                     })})
                     
     } else if (daysUntilEnd === 0) {
+        await deleteInbound(chatId)
         await bot.sendMessage(chatId, `Ваша подписка завершена. Пожалуйста, продлите её, чтобы продолжить пользоваться сервисом.`);
     }
 }
