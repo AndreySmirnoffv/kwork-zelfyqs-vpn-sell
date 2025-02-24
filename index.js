@@ -24,13 +24,6 @@ setInterval(async () => {
 }, 24 * 60 * 60 * 1000); 
 
 
-
-// bot.onText(/\/start/, async (msg) => {
-   //  console.log("Command start recieved")
-//});
-
-
-
 bot.on("message", async msg => {
     try {
         const chatId = msg.chat.id
