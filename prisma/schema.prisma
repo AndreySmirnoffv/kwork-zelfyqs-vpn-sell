@@ -38,7 +38,7 @@ model subscription {
 model payments {
   id        BigInt  @id @default(autoincrement())
   paymentId String  @unique
-  userId    BigInt  // Теперь корректный тип
+  userId    BigInt 
   amount    String
   status    String
   paid      Boolean @default(false)

@@ -14,7 +14,7 @@ import * as fs from 'fs'
 import { faqMessage } from "./assets/scripts/faqMessage.js";
 import { listMySubscriptions } from "./assets/scripts/subscribtions.js";
 import { createSubscriptionOPayment } from "./assets/scripts/subscriptionsPayment.js";
-
+import { generateWireGuardConfig } from './assets/scripts/wireguard.js'
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
 
 bot.setMyCommands(commands)
@@ -23,9 +23,11 @@ setInterval(async () => {
     await checkSubscriptions(bot); 
 }, 24 * 60 * 60 * 1000); 
 
-bot.onText(/\/start/, (msg) => {
-    console.log("Команда /start получена");
-});
+
+
+// bot.onText(/\/start/, async (msg) => {
+   //  console.log("Command start recieved")
+//});
 
 
 
@@ -36,16 +38,18 @@ bot.on("message", async msg => {
         const user = await prisma.users.findFirst({
             where: {chatId: chatId}
         })
-    
         if(user?.blocked){
             await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
         }
 
-        if (msg.text.includes("/start")){
+        if (msg.text.includes("/start") || msg.text === "/start" ){
             await createUser(bot, msg)
         }
     
-        switch(msg.text){            
+        switch(msg.text){
+	    case "/start":
+		    await createUser(bot, msg)
+                break
             case "/profile":
                 await profile(bot, chatId)
                 break

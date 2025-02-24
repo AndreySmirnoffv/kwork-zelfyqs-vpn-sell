@@ -4,7 +4,6 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// Определение __dirname для ES-модулей
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -20,7 +19,6 @@ export async function earnMessage(bot, chatId) {
             return await bot.sendMessage(chatId, "Пользователь не найден.");
         }
 
-        // Проверка, существует ли файл
         if (fs.existsSync(subscriptionPhotoPath)) {
             return await bot.sendPhoto(
                 chatId,
@@ -62,7 +60,8 @@ export async function earnMessage(bot, chatId) {
                 }
             );
         } else {
-            return await bot.sendMessage(chatId, "Изображение не найдено по пути: " + subscriptionPhotoPath);
+            await bot.sendMessage(chatId, "Ошибка обратитесь в поддержку")
+            return console.log("Изооброжение не найдено по пуи ./assets/db/images/");
         }
     } catch (error) {
         console.error("Error in earnMessage:", error);

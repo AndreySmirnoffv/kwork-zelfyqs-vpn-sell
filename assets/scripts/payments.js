@@ -4,7 +4,6 @@ import { v4 } from "uuid";
 import { handleSubscription } from "./subscribtions.js";
 import prices from '../db/db.json' with {type: "json"}
 import axios from "axios";
-import { createConfig } from "./wireguard.js";
 
 let paymentIntervals = {}; 
 
@@ -186,8 +185,9 @@ Android TV: Найдите WireGuard в <a href="https://play.google.com/store/s
 Если возникнут вопросы, наша поддержка 24/7 всегда готова помочь. 💬`, { parse_mode: 'HTML' });;
 
             await handleSubscription(bot, chatId, data);
-            return await createConfig(bot, chatId, username);
-        }
+            await generateWireGuardConfig(username);
+            await bot.sendDocuments(chatId, "./wg-" + username  + ".conf")
+	}
     } catch (error) {
         console.error("Ошибка при обработке успешной оплаты:", error);
         await bot.sendMessage(chatId, "Произошла ошибка при обработке оплаты. Пожалуйста, обратитесь в поддержку.");
