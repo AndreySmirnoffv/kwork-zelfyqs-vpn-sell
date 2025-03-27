@@ -1,11 +1,36 @@
 import { prisma } from "../services/prisma.js";
 import { vless } from "../services/vless.js";
 import subscriptions from '../db/db.json' with {type: "json"}
+import axios from "axios";
 
-let lastPort = 6000; 
+let lastPort = 6000;
 
-export async function createConfig(chatId, type) {
+export async function loginAndCreateConfig(chatId, type) {
   try {
+    // Step 1: Perform login
+    const loginResponse = await axios.post("http://91.184.243.8:16540/B9UmhnPsRsNvP0q6/login", {
+      username: "2v5s9O7btt",
+      password: "LJakpxnw94",
+    });
+
+    if (loginResponse.status === 200) {
+      console.log('Login successful, updating API URL...');
+      
+      const apiUrl = "http://91.184.243.8:16540/panel";  // New base URL after login
+      
+      // Step 3: Now proceed with the creation of config
+      await createConfig(chatId, type, apiUrl);
+    } else {
+      console.error('Login failed:', loginResponse.status);
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+  }
+}
+
+export async function createConfig(chatId, type, apiUrl) {
+  try {
+    // Step 1: Get subscription data
     const subscriptionData = subscriptions[type];
     if (!subscriptionData) {
       throw new Error(`Неизвестный тип подписки: ${type}`);
@@ -21,83 +46,38 @@ export async function createConfig(chatId, type) {
 
     const port = lastPort++;
 
-    const settings = {
-      clients: [{
-        id: chatId.toString(),
-        limitIp: 1,
-        totalGB: 0,
-        expiryTime: 0,
-        enable: true,
-        tgId: "",
-        subId: "rqv5zw1ydutamcp0",
-        reset: 0
-      }],
-      decryption: "none",
-      fallbacks: []
-    };
-
-    const streamSettings = {
-      network: "tcp",
-      security: "reality",
-      externalProxy: [],
-      realitySettings: {
-        show: false,
-        xver: 0,
-        dest: "yahoo.com:443",
-        serverNames: ["yahoo.com", "www.yahoo.com"],
-        privateKey: "wIc7zBUiTXBGxM7S7wl0nCZ663OAvzTDNqS7-bsxV3A",
-        minClient: "",
-        maxClient: "",
-        maxTimediff: 0,
-        shortIds: [
-          "47595474", "7a5e30", "810c1efd750030e8", "99", "9c19c134b8", "35fd", "2409c639a707b4", "c98fc6b39f45"
-        ],
-        settings: {
-          publicKey: "2UqLjQFhlvLcY7VzaKRotIDQFOgAJe1dYD1njigp9wk",
-          fingerprint: "random",
-          serverName: "",
-          spiderX: "/"
-        }
-      },
-      tcpSettings: {
-        acceptProxyProtocol: false,
-        header: {
-          type: "none"
-        }
-      }
-    };
-
-    const sniffing = {
-      enabled: true,
-      destOverride: ["http", "tls", "quic", "fakedns"],
-      metadataOnly: false,
-      routeOnly: false
-    };
-
-    const allocate = {
-      strategy: "always",
-      refresh: 5,
-      concurrency: 3
-    };
-
+    // Step 2: Prepare the inbound data for the config
     const inboundData = {
       up: 0,
       down: 0,
       total: 0,
       remark: chatId.toString(),
       enable: true,
-      expiryTime: 0,
-      listen: "",
-      port: port,
-      protocol: "vless",
-      settings: JSON.stringify(settings),
-      streamSettings: JSON.stringify(streamSettings), 
-      sniffing: JSON.stringify(sniffing),
-      allocate: JSON.stringify(allocate)
+      listen: "91.184.243.8",
+      port: 16540,
+      settings: JSON.stringify({
+        clients: [{ id: chatId.toString(), limitIp: 1, enable: true }],
+        decryption: "none",
+        fallbacks: []
+      }),
+      streamSettings: JSON.stringify({
+        network: "tcp",
+        security: "reality",
+        realitySettings: {
+          show: false,
+          xver: 0,
+          dest: "yahoo.com:443",
+          serverNames: ["yahoo.com"],
+          privateKey: "wIc7zBUiTXBGxM7S7wl0nCZ663OAvzTDNqS7-bsxV3A"
+        }
+      })
     };
 
-    await vless.addInbound(inboundData);
-
+    // Step 3: Send the request to the new API URL
+    const response = await axios.post(`${apiUrl}/api/inbounds/add`, inboundData);
+    
+    console.log(response.data);
+    const getResponse = await axios.post(`${apiUrl}/api`)    
     console.log(`Подписка для пользователя ${chatId} успешно создана с типом ${type} на ${subscriptionData.durationInDays || subscriptionData.durationInMonths} ${subscriptionData.durationInDays ? "дней" : "месяцев"}.`);
   } catch (error) {
     console.error("Ошибка при создании подписки:", error);
@@ -148,5 +128,5 @@ export async function getConfig(){
   }
 }
 
-createConfig(7878237823, "year_sub")
-// await getConfig()
+// Example usage
+// loginAndCreateConfig(7878237823, "year_sub");

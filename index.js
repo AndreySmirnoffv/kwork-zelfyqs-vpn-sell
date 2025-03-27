@@ -15,7 +15,7 @@ import { listMySubscriptions } from "./assets/scripts/subscribtions.js";
 import { createSubscriptionOPayment } from "./assets/scripts/subscriptionsPayment.js";
 import TelegramBot from "node-telegram-bot-api";
 
-const bot = new TelegramBot(process.env.TOKEN, {polling})
+const bot = new TelegramBot(process.env.TOKEN, {polling: true})
 
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
 

@@ -1,6 +1,5 @@
 import { prisma } from "../services/prisma.js";
 import { waitForText } from "../utils/waitForText.js";
-import { deleteConfig } from "./wireguard.js";
 import prices from "../db/db.json" with {type: "json"}
 
 export async function blockUser(bot, chatId){
@@ -8,13 +7,13 @@ export async function blockUser(bot, chatId){
     const username =  await waitForText(bot, chatId)
 
 
-    const blockingUser = await prisma.users.findFirst({
+    const isBlockedUser = await prisma.users.findFirst({
         where: {
             username
         }
     })
 
-    if (!blockingUser){
+    if (!isBlockedUser){
         return await bot.sendMessage(chatId, "Пользователь уже забанен")
     }
 
@@ -47,7 +46,7 @@ export async function adminIncome(bot, chatId) {
 
 export async function refPayments(bot, chatId){
     const refPayments = await prisma.refpayments.findMany({
-        select: {amount: true}
+        select: { amount: true }
     })
 
     const totalRefIncome = refPayments.map(payment => parseFloat(payment.amount)).reduce((sum, current) => sum + current, 0)
@@ -116,5 +115,5 @@ export async function changeVpnPrices(bot, chatId) {
 
     prices[selectedSubscription].price = Number(newPrice);
     
-    await bot.sendMessage(chatId, `Цена изменена! Новая стоимость ${prices[selectedSubscription].price} руб.`);
+    return await bot.sendMessage(chatId, `Цена изменена! Новая стоимость ${prices[selectedSubscription].price} руб.`);
 }
