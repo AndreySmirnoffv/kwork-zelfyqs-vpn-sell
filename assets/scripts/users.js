@@ -1,9 +1,9 @@
 import { adminKeyboard, profileKeyboard, startKeyboard } from '../keyboards/keyboards.js';
 import { prisma } from '../services/prisma.js';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
+import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,7 +18,7 @@ export async function createUser(bot, msg) {
         const user = await prisma.users.findFirst({
             where: { chatId: msg.chat.id }
         });
-
+        await bot.sendMessage(user.chatId, "hello world")
         if (user?.blocked) {
             return await bot.sendMessage(msg.chat.id, "Вам сюда нельзя");
         }

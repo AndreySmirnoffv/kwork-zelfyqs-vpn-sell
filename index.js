@@ -18,7 +18,7 @@ import TelegramBot from "node-telegram-bot-api";
 const bot = new TelegramBot(process.env.TOKEN, {polling: true})
 
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
-
+console.log(commands)
 bot.setMyCommands(commands)
 
 setInterval(async () => {
@@ -29,22 +29,23 @@ setInterval(async () => {
 bot.on("message", async msg => {
     try {
         const chatId = msg.chat.id
-
+        console.log(msg)
         const user = await prisma.users.findFirst({
             where: {chatId: chatId}
         })
 
         if(user?.blocked){
-            await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
+            return await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
         }
 
         if (msg.text.includes("/start") || msg.text === "/start" ){
+            console.log(msg)
             await createUser(bot, msg)
         }
     
         switch(msg.text){
-	    case "/start":
-		    await createUser(bot, msg)
+            case "/start":
+                await createUser(bot, msg)
                 break
             case "/profile":
                 await profile(bot, chatId)

@@ -2,7 +2,7 @@ import { v4 } from "uuid";
 import { checkout } from "../services/payment.js";
 import { prisma } from "../services/prisma.js";
 import prices from '../db/db.json' with {type: "json"}
-import { createConfig } from "./vless.js";
+import { createVlessConfig } from "./vless.js";
 
 let paymentIntervals = {}; 
 
@@ -135,7 +135,7 @@ export async function succeededSubpscriptionPayment(bot, chatId, paymentId, type
             },
         });
 
-        await createConfig(chatId, type)
+        await createVlessConfig(bot, msg)
 
         return await bot.sendMessage(chatId, `Вы успешно продлили подписку до ${endDate.toLocaleDateString()}`);
 
