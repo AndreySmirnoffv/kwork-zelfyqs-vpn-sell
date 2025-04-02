@@ -113,4 +113,3 @@ export async function disableUser(username) {
   }
 }
 
-resetHashfuck();

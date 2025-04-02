@@ -44,9 +44,6 @@ bot.on("message", async msg => {
         }
     
         switch(msg.text){
-            case "/start":
-                await createUser(bot, msg)
-                break
             case "/profile":
                 await profile(bot, chatId)
                 break
@@ -86,7 +83,7 @@ bot.on("message", async msg => {
         const chatMember = await bot.getChatMember(process.env.CHANNEL_ID, chatId)
         console.log(chatMember)
     } catch (error) {
-        
+        console.error(error)
     }
    
 })
