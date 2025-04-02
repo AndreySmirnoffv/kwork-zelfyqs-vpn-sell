@@ -4,11 +4,12 @@ import subscriptions from '../db/db.json' with { type: "json" };
 import tokenStorage from '../db/token.json' with { type: "json" };
 import * as fs from 'fs';
 
+
 async function updateToken(callback) {
   try {
     const params = new URLSearchParams();
-    params.append("username", "Myselfysew");
-    params.append("password", "Mssneack121212");
+    params.append("username", process.env.ADMIN_USERNAME);
+    params.append("password", process.env.ADMIN_PASS);
 
     const { data } = await axios.post("https://nxstore.online/api/admin/token", params, {
       headers: {
@@ -28,7 +29,7 @@ async function updateToken(callback) {
   }
 }
 
-export async function createVlessConfig(bot, msg) {
+export async function createVlessConfig(bot, username) {
   try {
     const { data } = await axios.post("https://nxstore.online/api/user", {
       "expire": 1,
@@ -37,6 +38,7 @@ export async function createVlessConfig(bot, msg) {
           "flow": ""
         }
       },
+      "data_limit_reset_strategy": "reset",
       "data_limit": 1,
       "auto_delete_in_days": 1,
       "expire": 0,
@@ -46,9 +48,9 @@ export async function createVlessConfig(bot, msg) {
           "XTLS"
         ]
       },
-      "note": "привет",
+      "note": "Спасибо что купили наш впн)",
       "status": "active",
-      "username": "ahsdjja"
+      "username": username
     }, {
       headers: {
         Authorization: `Bearer ${tokenStorage.access_token}`
@@ -57,7 +59,7 @@ export async function createVlessConfig(bot, msg) {
     console.log(data);
     return data;
   } catch (error) {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 || error.response.status === 404) {
       console.log("Token expired, updating...");
       await updateToken(() => createVlessConfig(bot, msg));
     } else {
@@ -66,9 +68,10 @@ export async function createVlessConfig(bot, msg) {
   }
 }
 
-export async function deleteUser() {
+
+export async function deleteUser(bot, msg) {
   try {
-    const { data } = await axios.delete(`https://nxstore.online/api/user/ahsdjja`, {
+    const { data } = await axios.delete(`https://nxstore.online/api/user/${msg.from.username}`, {
       headers: {
         Authorization: `Bearer ${tokenStorage.access_token}`
       }
@@ -76,7 +79,7 @@ export async function deleteUser() {
     console.log(data);
     console.log("User deleted");
   } catch (error) {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 || error.response.status === 404) {
       console.log("Token expired, updating...");
       await updateToken(deleteUser);
     } else {
@@ -85,4 +88,29 @@ export async function deleteUser() {
   }
 }
 
-await createVlessConfig();
+// await createVlessConfig();
+
+async function resetHashfuck() {
+  try {
+    const response = await axios.put(
+      'https://nxstore.online/api/user/hashfuck',
+      {
+        data_limit: 0,
+        data_limit_reset_strategy: "day",
+        expire: 1,
+        status: "disabled"
+      },
+      {
+        headers: {
+          'Accept': 'application/json',
+          Authorization: `Bearer ${tokenStorage.access_token}`
+        },
+      }
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error:', error.response ? error.response.data : error.message);
+  }
+}
+
+resetHashfuck();
