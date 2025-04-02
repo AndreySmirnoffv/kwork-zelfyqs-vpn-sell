@@ -8,6 +8,7 @@ import * as fs from 'fs';
 async function updateToken(callback) {
   try {
     const params = new URLSearchParams();
+
     params.append("username", process.env.ADMIN_USERNAME);
     params.append("password", process.env.ADMIN_PASS);
 
@@ -68,7 +69,6 @@ export async function createVlessConfig(bot, username) {
   }
 }
 
-
 export async function deleteUser(bot, msg) {
   try {
     const { data } = await axios.delete(`https://nxstore.online/api/user/${msg.from.username}`, {
@@ -90,10 +90,10 @@ export async function deleteUser(bot, msg) {
 
 // await createVlessConfig();
 
-async function resetHashfuck() {
+export async function disableUser(username) {
   try {
-    const response = await axios.put(
-      'https://nxstore.online/api/user/hashfuck',
+    const { data } = await axios.put(
+      `https://nxstore.online/api/user/${username}`,
       {
         data_limit: 0,
         data_limit_reset_strategy: "day",
@@ -107,7 +107,7 @@ async function resetHashfuck() {
         },
       }
     );
-    console.log(response.data);
+    console.log(data);
   } catch (error) {
     console.error('Error:', error.response ? error.response.data : error.message);
   }
