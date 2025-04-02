@@ -33,7 +33,7 @@ bot.on("message", async msg => {
         const user = await prisma.users.findFirst({
             where: {chatId: chatId}
         })
-
+        
         if(user?.blocked){
             return await bot.sendMessage(msg.chat.id, "Вам сюда нельзя")
         }

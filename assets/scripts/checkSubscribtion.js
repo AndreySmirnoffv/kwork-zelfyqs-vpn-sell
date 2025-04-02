@@ -16,7 +16,7 @@ export async function checkChannelSubscription(bot, chatId) {
         }
         const chatMember = await bot.getChatMember(process.env.CHANNEL_ID, chatId);
 
-        if (chatMember.status === "left" || chatMember.status === "kicked") {
+        if (chatMember.status !== "member") {
             return bot.sendMessage(chatId, "Вы не подписаны на канал. Подпишитесь, чтобы получить бонус.");
         }
 
