@@ -37,13 +37,13 @@ export async function createPayment(bot, userId, data, username) {
         });
 
 
-        const intervalId = setInterval(
+        setInterval(
             async () => await capturePayment(bot, userId, id, payload.amount.value, data, username),
-            10000
+            3000
         );
 
-        paymentIntervals[id] = intervalId;
-
+        // paymentIntervals[id] = intervalId;
+        console.log(status)
         return await bot.sendMessage(userId, `Вы можете оплатить по данной ссылке `, {
             reply_markup: {
                 inline_keyboard: [
@@ -186,8 +186,8 @@ Android TV: Найдите WireGuard в <a href="https://play.google.com/store/s
 Если возникнут вопросы, наша поддержка 24/7 всегда готова помочь. 💬`, { parse_mode: 'HTML' });;
 
             await handleSubscription(bot, chatId, data);
-            await createVlessConfig(bot, username);
-            await bot.sendDocuments(chatId, "./vless-" + username  + ".conf")
+            const { subLink, vlessId } = await createVlessConfig(username);
+            await bot.sendMessage(chatId, `subLink: ${subLink}\n VlessId: ${vlessId}`)
 	}
     } catch (error) {
         console.error("Ошибка при обработке успешной оплаты:", error);

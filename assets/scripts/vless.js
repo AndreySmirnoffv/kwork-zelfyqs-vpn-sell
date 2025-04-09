@@ -1,11 +1,9 @@
-import { prisma } from "../services/prisma.js";
 import axios from "axios";
-import subscriptions from '../db/db.json' with { type: "json" };
 import tokenStorage from '../db/token.json' with { type: "json" };
 import * as fs from 'fs';
 
-
 async function updateToken(callback) {
+
   try {
     const params = new URLSearchParams();
 
@@ -26,48 +24,52 @@ async function updateToken(callback) {
       await callback();
     }
   } catch (error) {
-    console.error("Failed to update token:", error);
+    return console.error("Failed to update token:", error);
   }
 }
 
-export async function createVlessConfig(bot, username) {
+export async function createVlessConfig(username) {
   try {
-    const { data } = await axios.post("https://nxstore.online/api/user", {
-      "expire": 1,
+    const { data } = await axios.post("https://nxstore.online/api/user",{
       "proxies": {
         "vless": {
           "flow": ""
         }
       },
-      "data_limit_reset_strategy": "reset",
-      "data_limit": 1,
-      "auto_delete_in_days": 1,
-      "expire": 0,
-      "inbounds": {
-        "vless": [
-          "Steal",
-          "XTLS"
-        ]
-      },
-      "note": "Спасибо что купили наш впн)",
-      "status": "active",
-      "username": username
-    }, {
+        "data_limit": 0,
+        "data_limit_reset_strategy": "month",
+        "expire": 0,
+              "inbounds": {
+              "vless": [
+                "Steal",
+                "XTLS"
+              ]
+            },
+
+        "note": "привет",
+
+
+  "status": "active",
+  "username": username
+}, {
       headers: {
         Authorization: `Bearer ${tokenStorage.access_token}`
       }
     });
-    console.log(data);
-    return data;
-  } catch (error) {
-    if (error.response && error.response.status === 401 || error.response.status === 404) {
-      console.log("Token expired, updating...");
-      await updateToken(() => createVlessConfig(bot, msg));
-    } else {
-      console.error("Error creating VLESS config:", error);
-    }
+
+    return { subLink: data.subscription_url, vlessId: data.proxies.vless.id };  } catch (error) {
+    
+      if (error.response && (error.response.status === 401)) {
+        return await updateToken(async () => await createVlessConfig(username));
+      }
+
+    console.error('Ошибка от сервера:', error?.response?.status);
+    console.error('Тело ответа:', JSON.stringify(error?.response?.data, null, 2));    
   }
 }
+
+
+await createVlessConfig("asddff")
 
 export async function deleteUser(bot, msg) {
   try {
@@ -88,7 +90,14 @@ export async function deleteUser(bot, msg) {
   }
 }
 
-// await createVlessConfig();
+export async function getUser(username){
+  try {
+    const { data } = await axios.get(`https://nxstore.online/api/user/${username}`)
+    return data
+  }catch(error){
+    console.error(error)
+  }
+}
 
 export async function disableUser(username) {
   try {

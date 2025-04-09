@@ -29,7 +29,7 @@ setInterval(async () => {
 bot.on("message", async msg => {
     try {
         const chatId = msg.chat.id
-        console.log(msg)
+
         const user = await prisma.users.findFirst({
             where: {chatId: chatId}
         })
