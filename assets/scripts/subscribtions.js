@@ -34,10 +34,7 @@ export async function handleSubscription(bot, chatId, subscriptionType) {
         },
     });
 
-    return await bot.sendMessage(
-        chatId,
-        `Подписка оформлена! Действует до ${endDate.toLocaleDateString()}`
-    );
+   return subscription
 }
 
 export async function extendSubscription(bot, chatId) {

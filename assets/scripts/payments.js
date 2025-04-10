@@ -24,7 +24,7 @@ export async function createPayment(bot, userId, data, username) {
             },
         };
 
-        const {id, status, paid, amount, confirmation} = await checkout.createPayment(payload, v4());
+        const { id, status, paid, amount, confirmation } = await checkout.createPayment(payload, v4());
 
         await prisma.payments.create({
             data: {
@@ -43,7 +43,7 @@ export async function createPayment(bot, userId, data, username) {
         );
 
         // paymentIntervals[id] = intervalId;
-        console.log(status)
+        // console.log(status)
         return await bot.sendMessage(userId, `Вы можете оплатить по данной ссылке `, {
             reply_markup: {
                 inline_keyboard: [
@@ -59,7 +59,7 @@ export async function createPayment(bot, userId, data, username) {
 async function capturePayment(bot, chatId, paymentId, price, data, username) {
     try {
         const paymentResponse = await checkout.getPayment(paymentId);
-        console.log(paymentResponse);
+        // console.log(paymentResponse);
 
 
         if (paymentResponse.status !== "waiting_for_capture" || (Date.now() - new Date(paymentResponse.created_at).getTime()) > 600000) {
@@ -75,7 +75,7 @@ async function capturePayment(bot, chatId, paymentId, price, data, username) {
         };
 
         const paymentResponsee = await checkout.capturePayment(paymentResponse.id, payload);
-        console.log(paymentResponsee);
+        // console.log(paymentResponsee);
 
         await prisma.payments.update({
             where: { paymentId },
@@ -184,10 +184,22 @@ Android TV: Найдите WireGuard в <a href="https://play.google.com/store/s
 4. Теперь ваш интернет защищён и свободен!
 
 Если возникнут вопросы, наша поддержка 24/7 всегда готова помочь. 💬`, { parse_mode: 'HTML' });;
+    
+    console.log(`userusername: ${username}`)
 
-            await handleSubscription(bot, chatId, data);
-            const { subLink, vlessId } = await createVlessConfig(username);
-            await bot.sendMessage(chatId, `subLink: ${subLink}\n VlessId: ${vlessId}`)
+    const { subLink } = await createVlessConfig(bot, chatId, username);
+
+    await handleSubscription(bot, chatId, data);
+    console.log("sublink: " + subLink)
+    return await bot.sendMessage(chatId, `${username}, Ваш айди ${chatId}
+Статус: ✅ Активен!
+Действует до: ${endDate.getDay()}.${endDate.getMonth()}.${endDate.getFullYear()}`, {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "Установить и Управлять", url: subLink }]
+            ]
+        }
+    })
 	}
     } catch (error) {
         console.error("Ошибка при обработке успешной оплаты:", error);
@@ -197,7 +209,6 @@ Android TV: Найдите WireGuard в <a href="https://play.google.com/store/s
 
 export async function createPayout(){
       try {
-    
         const response = await axios.post(
           'https://api.yookassa.ru/v3/payouts',
           {

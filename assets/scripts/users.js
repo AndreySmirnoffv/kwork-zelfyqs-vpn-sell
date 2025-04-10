@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 import path from 'path';
+import { v7 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,7 +30,7 @@ export async function createUser(bot, msg) {
                     firstname: msg.from.first_name || "undefined",
                     lastname: msg.from.last_name || "undefined",
                     chatId: msg.chat.id,
-                    username: msg?.from?.username || "undefined",
+                    username: msg?.from?.username || v7(),
                     balance: 0,
                     isAdmin: false,
                     ref: `${process.env.BOT_LINK}?start=${msg.chat.id}`,

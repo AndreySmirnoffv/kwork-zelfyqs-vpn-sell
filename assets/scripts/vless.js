@@ -28,8 +28,10 @@ async function updateToken(callback) {
   }
 }
 
-export async function createVlessConfig(username) {
+export async function createVlessConfig(bot, chatId, username) {
+  console.log("createVlessConfig")
   try {
+    console.log("try catch block")
     const { data } = await axios.post("https://nxstore.online/api/user",{
       "proxies": {
         "vless": {
@@ -57,19 +59,23 @@ export async function createVlessConfig(username) {
       }
     });
 
-    return { subLink: data.subscription_url, vlessId: data.proxies.vless.id };  } catch (error) {
+    console.log("sublink error: " + data.subscription_url)
+    return { subLink: data.subscription_url }
+  } catch (error) {
+    if (error.response.status === 401) {
+      console.log(401)  
+      return await updateToken(async () => await createVlessConfig(username));
+    }else if (error.response?.status === 404){
+      console.log("404 error: ", error)
+      return await updateToken(async () => await createVlessConfig(username));
+    }else if (error.response?.status === 409){
+      console.log("user exists")
+      return await bot.sendMessage(chatId, "Вы уже существуете в системе")
+    }  
     
-      if (error.response && (error.response.status === 401)) {
-        return await updateToken(async () => await createVlessConfig(username));
-      }
-
-    console.error('Ошибка от сервера:', error?.response?.status);
-    console.error('Тело ответа:', JSON.stringify(error?.response?.data, null, 2));    
+    return console.log("some error", error)
   }
 }
-
-
-await createVlessConfig("asddff")
 
 export async function deleteUser(bot, msg) {
   try {
@@ -83,10 +89,10 @@ export async function deleteUser(bot, msg) {
   } catch (error) {
     if (error.response && error.response.status === 401 || error.response.status === 404) {
       console.log("Token expired, updating...");
-      await updateToken(deleteUser);
-    } else {
-      console.error("Error deleting user:", error);
+      return await updateToken(deleteUser(bot, msg));
     }
+    
+    return console.error("Error deleting user:", error);
   }
 }
 
@@ -116,9 +122,10 @@ export async function disableUser(username) {
         },
       }
     );
-    console.log(data);
+
+    return console.log(data);
   } catch (error) {
-    console.error('Error:', error.response ? error.response.data : error.message);
+    return console.error('Error:', error.response ? error.response.data : error.message);
   }
 }
 

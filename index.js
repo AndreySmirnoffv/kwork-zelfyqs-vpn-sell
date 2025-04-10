@@ -17,6 +17,8 @@ import TelegramBot from "node-telegram-bot-api";
 
 const bot = new TelegramBot(process.env.TOKEN, {polling: true})
 
+process.env.NTBA_FIX_350 = "true"
+
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
 console.log(commands)
 bot.setMyCommands(commands)
@@ -91,7 +93,7 @@ bot.on("message", async msg => {
 bot.on('callback_query', async msg => {
     const data = msg.data
     const chatId = msg.message.chat.id
-    const username = msg.message.from.username
+    const username = msg.from.username
     const messageId = msg.message.message_id
 
     const user = await prisma.users.findFirst({
