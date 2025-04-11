@@ -9,18 +9,18 @@ import { checkChannelSubscription } from "./assets/scripts/checkSubscribtion.js"
 import { earnMessage } from "./assets/scripts/earnMessage.js";
 import { vpnMessage } from "./assets/scripts/vpnMessage.js";
 import { getVpnMessage } from "./assets/scripts/getVpnMessage.js";
-import * as fs from 'fs'
 import { faqMessage } from "./assets/scripts/faqMessage.js";
 import { listMySubscriptions } from "./assets/scripts/subscribtions.js";
 import { createSubscriptionOPayment } from "./assets/scripts/subscriptionsPayment.js";
 import TelegramBot from "node-telegram-bot-api";
+import * as fs from 'fs'
 
 const bot = new TelegramBot(process.env.TOKEN, {polling: true})
 
 process.env.NTBA_FIX_350 = "true"
 
 const commands = JSON.parse(fs.readFileSync("./assets/db/commands/commands.json", 'utf-8'))
-console.log(commands)
+
 bot.setMyCommands(commands)
 
 setInterval(async () => {
@@ -41,7 +41,6 @@ bot.on("message", async msg => {
         }
 
         if (msg.text.includes("/start") || msg.text === "/start" ){
-            console.log(msg)
             await createUser(bot, msg)
         }
     
@@ -82,10 +81,9 @@ bot.on("message", async msg => {
                 break
         }
 
-        const chatMember = await bot.getChatMember(process.env.CHANNEL_ID, chatId)
-        console.log(chatMember)
+
     } catch (error) {
-        console.error(error)
+        throw new Error(error)
     }
    
 })
@@ -186,8 +184,6 @@ bot.on('callback_query', async msg => {
             break
         default:
             const subType = data.split('_')[1];
-            console.log("Тип подписки:", subType)
-            console.log(data)
             await createSubscriptionOPayment(bot, chatId, data.replace("pay_", ""), msg.from.username)
             break
         }
